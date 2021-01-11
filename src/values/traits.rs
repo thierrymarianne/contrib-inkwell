@@ -1,5 +1,6 @@
 use llvm_sys::prelude::LLVMValueRef;
 use llvm_sys::core::{LLVMConstExtractValue, LLVMConstInsertValue};
+use llvm_sys::core::{LLVMGetOperand, LLVMGetNumOperands};
 
 use std::fmt::Debug;
 
@@ -138,6 +139,29 @@ pub trait AnyValue<'ctx>: AsValueRef + Debug {
         unsafe {
             Value::new(self.as_value_ref()).print_to_string()
         }
+    }
+
+    fn get_num_operands(&self) -> u32 {
+        unsafe {
+            LLVMGetNumOperands(self.as_value_ref()) as u32
+        }
+    }
+
+    fn get_operand(&self, index: u32) -> Option<AnyValueEnum<'ctx>> {
+        let num_operands = self.get_num_operands();
+
+        if index >= num_operands {
+            return None;
+        }
+
+        let operand = unsafe {
+            LLVMGetOperand(self.as_value_ref(), index)
+        };
+
+        if operand.is_null() {
+            return None;
+        }
+        Some(AnyValueEnum::new(operand))
     }
 }
 
