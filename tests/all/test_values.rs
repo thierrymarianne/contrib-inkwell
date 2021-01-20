@@ -732,6 +732,7 @@ fn test_globals() {
     // REVIEW: Segfaults in 4.0 -> 11.0
     #[cfg(not(any(feature = "llvm4-0", feature = "llvm5-0", feature = "llvm6-0", feature = "llvm7-0", feature = "llvm8-0", feature = "llvm9-0", feature = "llvm10-0", feature = "llvm11-0", feature = "llvm12-0")))]
     assert_eq!(global.get_section().map(|cs| cs.to_str()), Some(Ok("")));
+    // REVIEW: LLVM 3.6 - 3.9 just straight up segfault here. Maybe a bug?:
     #[cfg(not(any(feature = "llvm3-6", feature = "llvm3-7", feature = "llvm3-8", feature = "llvm3-9")))]
     assert_eq!(global.get_section(), None);
     assert_eq!(global.get_dll_storage_class(), DLLStorageClass::default());
