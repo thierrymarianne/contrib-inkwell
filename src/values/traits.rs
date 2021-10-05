@@ -1,8 +1,10 @@
+use either::{Either, Either::{Left, Right}};
 use llvm_sys::prelude::LLVMValueRef;
-use llvm_sys::core::{LLVMConstExtractValue, LLVMConstInsertValue};
+use llvm_sys::core::{LLVMIsABasicBlock, LLVMValueAsBasicBlock, LLVMConstExtractValue, LLVMConstInsertValue, LLVMGetOperand, LLVMGetNumOperands};
 
 use std::fmt::Debug;
 
+use crate::basic_block::BasicBlock;
 use crate::values::{ArrayValue, AggregateValueEnum, BasicValueUse, CallSiteValue, GlobalValue, StructValue, BasicValueEnum, AnyValueEnum, IntValue, FloatValue, PointerValue, PhiValue, VectorValue, FunctionValue, InstructionValue, Value};
 use crate::types::{IntMathType, FloatMathType, PointerMathType, IntType, FloatType, PointerType, VectorType};
 use crate::support::LLVMString;
@@ -137,6 +139,42 @@ pub trait AnyValue<'ctx>: AsValueRef + Debug {
     fn print_to_string(&self) -> LLVMString {
         unsafe {
             Value::new(self.as_value_ref()).print_to_string()
+        }
+    }
+
+    fn get_num_operands(&self) -> u32 {
+        unsafe {
+            LLVMGetNumOperands(self.as_value_ref()) as u32
+        }
+    }
+
+    fn get_operand(&self, index: u32) -> Option<Either<BasicValueEnum<'ctx>, BasicBlock<'ctx>>> {
+        let num_operands = self.get_num_operands();
+
+        if index >= num_operands {
+            return None;
+        }
+
+        let operand = unsafe {
+            LLVMGetOperand(self.as_value_ref(), index)
+        };
+
+        if operand.is_null() {
+            return None;
+        }
+
+        let is_basic_block = unsafe {
+            !LLVMIsABasicBlock(operand).is_null()
+        };
+
+        if is_basic_block {
+            let bb = unsafe {
+                BasicBlock::new(LLVMValueAsBasicBlock(operand))
+            };
+
+            Some(Right(bb.expect("BasicBlock should always be valid")))
+        } else {
+            Some(Left(unsafe { BasicValueEnum::new(operand) }))
         }
     }
 }
