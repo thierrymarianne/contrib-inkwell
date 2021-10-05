@@ -7,7 +7,7 @@ use std::ffi::CStr;
 use crate::basic_block::BasicBlock;
 use crate::types::StructType;
 use crate::values::traits::AsValueRef;
-use crate::values::{BasicValueEnum, InstructionValue, Value};
+use crate::values::{AnyValueEnum, BasicValueEnum, InstructionValue, Value};
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
 pub struct StructValue<'ctx> {
@@ -61,7 +61,8 @@ impl<'ctx> StructValue<'ctx> {
         }
     }
 
-    fn get_operand(&self, index: u32) -> Option<Either<BasicValueEnum<'ctx>, BasicBlock<'ctx>>> {
+    fn get_operand(&self, index: u32) -> Option<AnyValueEnum<'ctx>> {
+    // fn get_operand(&self, index: u32) -> Option<Either<BasicValueEnum<'ctx>, BasicBlock<'ctx>>> {
         let num_operands = self.get_num_operands();
 
         if index >= num_operands {
@@ -76,19 +77,20 @@ impl<'ctx> StructValue<'ctx> {
             return None;
         }
 
-        let is_basic_block = unsafe {
-            !LLVMIsABasicBlock(operand).is_null()
-        };
-
-        if is_basic_block {
-            let bb = unsafe {
-                BasicBlock::new(LLVMValueAsBasicBlock(operand))
-            };
-
-            Some(Right(bb.expect("BasicBlock should always be valid")))
-        } else {
-            Some(Left(unsafe { BasicValueEnum::new(operand) }))
-        }
+        Some(unsafe { AnyValueEnum::new(operand) })
+        // let is_basic_block = unsafe {
+        //     !LLVMIsABasicBlock(operand).is_null()
+        // };
+        //
+        // if is_basic_block {
+        //     let bb = unsafe {
+        //         BasicBlock::new(LLVMValueAsBasicBlock(operand))
+        //     };
+        //
+        //     Some(Right(bb.expect("BasicBlock should always be valid")))
+        // } else {
+        //     Some(Left(unsafe { BasicValueEnum::new(operand) }))
+        // }
     }
 }
 

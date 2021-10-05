@@ -148,7 +148,8 @@ pub trait AnyValue<'ctx>: AsValueRef + Debug {
         }
     }
 
-    fn get_operand(&self, index: u32) -> Option<Either<BasicValueEnum<'ctx>, BasicBlock<'ctx>>> {
+    // fn get_operand(&self, index: u32) -> Option<Either<BasicValueEnum<'ctx>, BasicBlock<'ctx>>> {
+    fn get_operand(&self, index: u32) -> Option<AnyValueEnum<'ctx>> {
         let num_operands = self.get_num_operands();
 
         if index >= num_operands {
@@ -160,25 +161,26 @@ pub trait AnyValue<'ctx>: AsValueRef + Debug {
         };
 
         if operand.is_null() {
-            println!("operand is null: {:?}", operand.is_null());
             return None;
         }
 
-        let is_basic_block = unsafe {
-            !LLVMIsABasicBlock(operand).is_null()
-        };
+        Some(unsafe { AnyValueEnum::new(operand) })
 
-        println!("basic block: {:?} ", is_basic_block);
-
-        if is_basic_block {
-            let bb = unsafe {
-                BasicBlock::new(LLVMValueAsBasicBlock(operand))
-            };
-
-            Some(Right(bb.expect("BasicBlock should always be valid")))
-        } else {
-            Some(Left(unsafe { BasicValueEnum::new(operand) }))
-        }
+        // let is_basic_block = unsafe {
+        //     !LLVMIsABasicBlock(operand).is_null()
+        // };
+        //
+        // println!("basic block: {:?} ", is_basic_block);
+        //
+        // if is_basic_block {
+        //     let bb = unsafe {
+        //         BasicBlock::new(LLVMValueAsBasicBlock(operand))
+        //     };
+        //
+        //     Some(Right(bb.expect("BasicBlock should always be valid")))
+        // } else {
+        //     Some(Left(unsafe { BasicValueEnum::new(operand) }))
+        // }
     }
 }
 
