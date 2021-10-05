@@ -160,12 +160,15 @@ pub trait AnyValue<'ctx>: AsValueRef + Debug {
         };
 
         if operand.is_null() {
+            println!("operand is null: {:?}", operand.is_null());
             return None;
         }
 
         let is_basic_block = unsafe {
             !LLVMIsABasicBlock(operand).is_null()
         };
+
+        println!("basic block: {:?} ", is_basic_block);
 
         if is_basic_block {
             let bb = unsafe {
