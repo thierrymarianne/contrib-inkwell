@@ -160,11 +160,13 @@ pub trait AnyValue<'ctx>: AsValueRef + Debug {
             LLVMGetOperand(self.as_value_ref(), index)
         };
 
-        if operand.is_null() {
-            return None;
-        }
+        println!("return None from trait.");
 
-        Some(unsafe { AnyValueEnum::new(operand) })
+        // if operand.is_null() {
+            return None;
+        // }
+
+        // Some(unsafe { AnyValueEnum::new(operand) })
 
         // let is_basic_block = unsafe {
         //     !LLVMIsABasicBlock(operand).is_null()
