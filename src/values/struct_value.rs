@@ -73,13 +73,13 @@ impl<'ctx> StructValue<'ctx> {
             LLVMGetOperand(self.as_value_ref(), index)
         };
 
-        println!("return None");
-
-        // if operand.is_null() {
+        if operand.is_null() {
             return None;
-        // }
+        }
 
-        // Some(unsafe { AnyValueEnum::new(operand) })
+        println!("{:?}: returning operand from struct_value", operand);
+
+        Some(unsafe { AnyValueEnum::new(operand) })
         // let is_basic_block = unsafe {
         //     !LLVMIsABasicBlock(operand).is_null()
         // };
